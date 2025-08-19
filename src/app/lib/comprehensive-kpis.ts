@@ -1,5 +1,6 @@
 // src/app/lib/comprehensive-kpis.ts
 import { RawRow } from "./supabase-data";
+import { getRegionFromRelay } from "../config/relay-regions";
 
 export interface ComprehensiveKpis {
   // 1. Passeports et commandes
@@ -23,6 +24,12 @@ export interface ComprehensiveKpis {
     Q3: number;
     Q4: number;
   };
+  quarterlyPercentages: {
+    Q1: number;
+    Q2: number;
+    Q3: number;
+    Q4: number;
+  };
   mostActiveMonth: {
     month: number;
     monthName: string;
@@ -34,10 +41,15 @@ export interface ComprehensiveKpis {
     BZH: number; // Bretagne
     PDL: number; // Pays de la Loire
     NAQ: number; // Nouvelle-Aquitaine
-    Autre: number;
+  };
+  regionalPercentages: {
+    BZH: number; // Bretagne %
+    PDL: number; // Pays de la Loire %
+    NAQ: number; // Nouvelle-Aquitaine %
   };
   frenchClientele: number; // Pourcentage
   foreignClientele: {
+    totalPercentage: number; // % d'étrangers total
     ES: number; // Espagne
     DE: number; // Allemagne
     UK: number; // Royaume-Uni
@@ -121,7 +133,7 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
   const uniqueStampSet = new Set(allStamps);
   // Nouveau calcul: totalStamps = passportsOrdered × 10
   const totalStamps = passportsOrdered * 10;
-  const avgStampsPerPassport = passportsOrdered > 0 ? totalStamps / passportsOrdered : 0;
+  const avgStampsPerPassport = 10; // Fixé à 10 comme demandé
 
   // 3. Évolution et répartition temporelle
   const quarterlyData = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
@@ -151,26 +163,72 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
   ];
 
   // 4. Répartition géographique
-  const regionalCounts = { BZH: 0, PDL: 0, NAQ: 0, Autre: 0 };
+  const regionalCounts = { BZH: 0, PDL: 0, NAQ: 0 };
   const countryCounts: { [key: string]: number } = {};
   let frenchOrders = 0;
+  let unmappedRelayOrders = 0;
+  let noRelayOrders = 0;
+  const unmappedRelays = new Set<string>();
 
   yearData.forEach(row => {
-    if (row.country === 'France') {
+    // Utiliser le champ boolean 'france' de Supabase
+    if (row.france === true) {
       frenchOrders++;
-      if (row.region) {
-        regionalCounts[row.region as keyof typeof regionalCounts]++;
-      }
     }
+    
+    // Déterminer la région à partir du point relais
+    const region = getRegionFromRelay(row.relay);
+    if (region && region in regionalCounts) {
+      regionalCounts[region as keyof typeof regionalCounts]++;
+    } else if (row.relay) {
+      // Point relais présent mais non mappé
+      unmappedRelayOrders++;
+      unmappedRelays.add(row.relay);
+      
+      // Point relais non mappé (debug désactivé)
+    } else {
+      // Pas de point relais
+      noRelayOrders++;
+    }
+    
     countryCounts[row.country || 'Inconnu'] = (countryCounts[row.country || 'Inconnu'] || 0) + 1;
   });
 
+  // Debug: vérifier la cohérence des totaux
+  const mappedRegionalTotal = regionalCounts.BZH + regionalCounts.PDL + regionalCounts.NAQ;
+  const calculatedTotal = mappedRegionalTotal + unmappedRelayOrders + noRelayOrders;
+  
+  console.log(`📊 Debug répartition régionale:`);
+  console.log(`   - Total commandes: ${totalOrders}`);
+  console.log(`   - Commandes mappées (BZH+PDL+NAQ): ${mappedRegionalTotal}`);
+  console.log(`   - Points relais non mappés: ${unmappedRelayOrders}`);
+  console.log(`   - Sans point relais: ${noRelayOrders}`);
+  console.log(`   - Total calculé: ${calculatedTotal}`);
+  console.log(`   - Différence: ${totalOrders - calculatedTotal}`);
+  
+  if (unmappedRelays.size > 0) {
+    console.log(`🚨 Points relais non mappés (${unmappedRelays.size}) :`, Array.from(unmappedRelays));
+  }
+
+  // Clientèle française = % de français parmi les commandes de la période filtrée
   const frenchClientele = totalOrders > 0 ? (frenchOrders / totalOrders) * 100 : 0;
+  const foreignOrdersCount = totalOrders - frenchOrders;
+  const foreignClientelePercentage = totalOrders > 0 ? (foreignOrdersCount / totalOrders) * 100 : 0;
+  
   const foreignClientele = {
-    ES: totalOrders > 0 ? ((countryCounts['Espagne'] || 0) / totalOrders) * 100 : 0,
-    DE: totalOrders > 0 ? ((countryCounts['Allemagne'] || 0) / totalOrders) * 100 : 0,
-    UK: totalOrders > 0 ? ((countryCounts['Royaume-Uni'] || 0) / totalOrders) * 100 : 0,
-    BE: totalOrders > 0 ? ((countryCounts['Belgique'] || 0) / totalOrders) * 100 : 0,
+    totalPercentage: foreignClientelePercentage,
+    ES: foreignOrdersCount > 0 ? ((countryCounts['Espagne'] || 0) / foreignOrdersCount) * 100 : 0,
+    DE: foreignOrdersCount > 0 ? ((countryCounts['Allemagne'] || 0) / foreignOrdersCount) * 100 : 0,
+    UK: foreignOrdersCount > 0 ? ((countryCounts['Royaume-Uni'] || 0) / foreignOrdersCount) * 100 : 0,
+    BE: foreignOrdersCount > 0 ? ((countryCounts['Belgique'] || 0) / foreignOrdersCount) * 100 : 0,
+  };
+
+  // Calcul des pourcentages régionaux
+  const totalRegionalOrders = regionalCounts.BZH + regionalCounts.PDL + regionalCounts.NAQ;
+  const regionalPercentages = {
+    BZH: totalRegionalOrders > 0 ? (regionalCounts.BZH / totalRegionalOrders) * 100 : 0,
+    PDL: totalRegionalOrders > 0 ? (regionalCounts.PDL / totalRegionalOrders) * 100 : 0,
+    NAQ: totalRegionalOrders > 0 ? (regionalCounts.NAQ / totalRegionalOrders) * 100 : 0,
   };
 
   // 5. Points relais
@@ -250,6 +308,12 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
       period: `${new Date().getFullYear()}`
     },
     quarterlyDistribution: quarterlyData,
+    quarterlyPercentages: {
+      Q1: totalOrders > 0 ? (quarterlyData.Q1 / totalOrders) * 100 : 0,
+      Q2: totalOrders > 0 ? (quarterlyData.Q2 / totalOrders) * 100 : 0,
+      Q3: totalOrders > 0 ? (quarterlyData.Q3 / totalOrders) * 100 : 0,
+      Q4: totalOrders > 0 ? (quarterlyData.Q4 / totalOrders) * 100 : 0,
+    },
     mostActiveMonth: {
       month: mostActiveMonth.month,
       monthName: monthNames[mostActiveMonth.month - 1] || 'Inconnu',
@@ -258,6 +322,7 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
 
     // 4. Répartition géographique
     regionalDistribution: regionalCounts,
+    regionalPercentages,
     frenchClientele,
     foreignClientele,
 

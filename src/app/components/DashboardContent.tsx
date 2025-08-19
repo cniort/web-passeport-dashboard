@@ -173,19 +173,18 @@ export default function DashboardContent() {
           <ComparisonCard
             title="Points relais actifs"
             icon={MapPin}
-            currentValue={kpis.activeRelayPoints}
+            currentValue="??"
             currentYear={filters.selectedYear}
-            compareValue={kpis.comparison?.activeRelayPoints}
+            compareValue="??"
             compareYear={filters.compareYear}
-            subtitle={`${kpis.relayOrdersPercentage.toFixed(1)}% des commandes`}
           />
 
           <ComparisonCard
             title="Tampons uniques"
             icon={MapPin}
-            currentValue={kpis.uniqueStamps}
+            currentValue="??"
             currentYear={filters.selectedYear}
-            compareValue={kpis.comparison?.uniqueStamps}
+            compareValue="??"
             compareYear={filters.compareYear}
           />
 
@@ -201,84 +200,111 @@ export default function DashboardContent() {
         </section>
 
         {/* KPIs géographiques */}
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4">
-          <ComparisonCard
-            title="Région Bretagne"
-            icon={MapPin}
-            currentValue={kpis.regionalDistribution.BZH}
-            currentYear={filters.selectedYear}
-            compareValue={kpis.comparison?.regionalDistribution.BZH}
-            compareYear={filters.compareYear}
-            subtitle="BZH"
-          />
-
-          <ComparisonCard
-            title="Région Pays de Loire"
-            icon={MapPin}
-            currentValue={kpis.regionalDistribution.PDL}
-            currentYear={filters.selectedYear}
-            compareValue={kpis.comparison?.regionalDistribution.PDL}
-            compareYear={filters.compareYear}
-            subtitle="PDL"
-          />
-
-          <ComparisonCard
-            title="Région Nouvelle-Aquitaine"
-            icon={MapPin}
-            currentValue={kpis.regionalDistribution.NAQ}
-            currentYear={filters.selectedYear}
-            compareValue={kpis.comparison?.regionalDistribution.NAQ}
-            compareYear={filters.compareYear}
-            subtitle="NAQ"
-          />
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {/* Répartition régionale regroupée */}
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm md:col-span-2 xl:col-span-1">
+            <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-slate-600" />
+              Répartition régionale
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-600">Bretagne (BZH)</span>
+                <div className="text-right">
+                  <div className="font-bold text-blue-600 text-lg">
+                    {kpis.regionalPercentages?.BZH?.toFixed(1) || '0.0'}%
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {kpis.regionalDistribution.BZH.toLocaleString("fr-FR")} commandes
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-600">Pays de Loire (PDL)</span>
+                <div className="text-right">
+                  <div className="font-bold text-blue-600 text-lg">
+                    {kpis.regionalPercentages?.PDL?.toFixed(1) || '0.0'}%
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {kpis.regionalDistribution.PDL.toLocaleString("fr-FR")} commandes
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-600">Nouvelle-Aquitaine (NAQ)</span>
+                <div className="text-right">
+                  <div className="font-bold text-blue-600 text-lg">
+                    {kpis.regionalPercentages?.NAQ?.toFixed(1) || '0.0'}%
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {kpis.regionalDistribution.NAQ.toLocaleString("fr-FR")} commandes
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <ComparisonCard
             title="Point relais top"
             icon={MapPin}
-            currentValue={kpis.mostSolicitedRelay.passportCount}
+            currentValue={kpis.mostSolicitedRelay.name}
             currentYear={filters.selectedYear}
-            compareValue={kpis.comparison?.mostSolicitedRelay.passportCount}
+            compareValue={kpis.comparison?.mostSolicitedRelay.name}
             compareYear={filters.compareYear}
-            subtitle={kpis.mostSolicitedRelay.name.split(' ').slice(0, 3).join(' ')}
+            subtitle={`${kpis.mostSolicitedRelay.passportCount} passeports`}
+            format="text"
           />
         </section>
 
-        {/* Section répartition trimestrielle */}
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-1">
+        {/* Section répartition trimestrielle et saisonnalité fusionnées */}
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-slate-600" />
               Répartition trimestrielle {filters.selectedYear}
             </h3>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-slate-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">{kpis.quarterlyDistribution.Q1}</div>
                 <div className="text-sm text-slate-600">T1 (Jan-Mar)</div>
+                <div className="text-xs text-slate-500">{kpis.quarterlyPercentages.Q1.toFixed(1)}%</div>
               </div>
               <div className="text-center p-4 bg-slate-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">{kpis.quarterlyDistribution.Q2}</div>
                 <div className="text-sm text-slate-600">T2 (Avr-Jun)</div>
+                <div className="text-xs text-slate-500">{kpis.quarterlyPercentages.Q2.toFixed(1)}%</div>
               </div>
               <div className="text-center p-4 bg-slate-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">{kpis.quarterlyDistribution.Q3}</div>
                 <div className="text-sm text-slate-600">T3 (Jul-Sep)</div>
+                <div className="text-xs text-slate-500">{kpis.quarterlyPercentages.Q3.toFixed(1)}%</div>
               </div>
               <div className="text-center p-4 bg-slate-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">{kpis.quarterlyDistribution.Q4}</div>
                 <div className="text-sm text-slate-600">T4 (Oct-Déc)</div>
+                <div className="text-xs text-slate-500">{kpis.quarterlyPercentages.Q4.toFixed(1)}%</div>
               </div>
             </div>
           </div>
-        </section>
 
-        {/* KPIs comportementaux et saisonniers */}
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-slate-600" />
-              Comportements de commande
+              <MapPin className="h-5 w-5 text-slate-600" />
+              Saisonnalité & Comportements
             </h3>
             <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-600">Pleine saison (Jul-Aoû)</span>
+                <span className="font-bold text-blue-600">
+                  {kpis.highSeasonPercentage.toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-600">Hors saison</span>
+                <span className="font-bold text-slate-600">
+                  {kpis.offSeasonPercentage.toFixed(1)}%
+                </span>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">Jour le plus fréquent</span>
                 <span className="font-bold text-blue-600">
@@ -299,33 +325,10 @@ export default function DashboardContent() {
               </div>
             </div>
           </div>
+        </section>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-slate-600" />
-              Saisonnalité
-            </h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Pleine saison (Jul-Aoû)</span>
-                <span className="font-bold text-blue-600">
-                  {kpis.highSeasonPercentage.toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Hors saison</span>
-                <span className="font-bold text-slate-600">
-                  {kpis.offSeasonPercentage.toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Passeports été</span>
-                <span className="font-bold text-slate-800">
-                  {kpis.highSeasonPassports.toLocaleString("fr-FR")}
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* KPIs comportementaux et saisonniers */}
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-1">
 
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
@@ -333,26 +336,48 @@ export default function DashboardContent() {
               Clientèles étrangères
             </h3>
             <div className="space-y-4">
+              {/* Pourcentage d'étrangers total */}
+              <div className="flex justify-between items-center pb-2">
+                <span className="text-sm font-medium text-slate-700">Part d'étrangers (hors France)</span>
+                <span className="font-bold text-blue-600">
+                  {kpis.foreignClientele.totalPercentage.toFixed(1)}%
+                </span>
+              </div>
+              
+              {/* Séparateur */}
+              <div className="border-t border-slate-200 my-3"></div>
+              
+              {/* Répartition par pays */}
+              <div className="text-xs text-slate-500 mb-2">Répartition par pays étrangers :</div>
+              
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Espagne (ES)</span>
+                <span className="text-sm text-slate-600 flex items-center gap-2">
+                  <span>🇪🇸</span> Espagne
+                </span>
                 <span className="font-bold text-slate-800">
                   {kpis.foreignClientele.ES.toFixed(1)}%
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Allemagne (DE)</span>
+                <span className="text-sm text-slate-600 flex items-center gap-2">
+                  <span>🇩🇪</span> Allemagne
+                </span>
                 <span className="font-bold text-slate-800">
                   {kpis.foreignClientele.DE.toFixed(1)}%
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Royaume-Uni (UK)</span>
+                <span className="text-sm text-slate-600 flex items-center gap-2">
+                  <span>🇬🇧</span> Royaume-Uni
+                </span>
                 <span className="font-bold text-slate-800">
                   {kpis.foreignClientele.UK.toFixed(1)}%
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Belgique (BE)</span>
+                <span className="text-sm text-slate-600 flex items-center gap-2">
+                  <span>🇧🇪</span> Belgique
+                </span>
                 <span className="font-bold text-slate-800">
                   {kpis.foreignClientele.BE.toFixed(1)}%
                 </span>

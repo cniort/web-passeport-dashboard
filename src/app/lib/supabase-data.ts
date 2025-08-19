@@ -34,6 +34,7 @@ export type RawRow = {
   id?: number;
   passports: number | null;
   country: string | null;
+  france: boolean; // Champ boolean pour déterminer si client français
   relay: string | null;
   newsletter: boolean;
   orderDate: string | null;
@@ -149,6 +150,7 @@ function transformSupabaseToRawRow(supabaseRow: SupabaseResponse): RawRow {
     id: supabaseRow.id,
     passports: supabaseRow.quantite || 0,
     country: supabaseRow.pays || null,
+    france: supabaseRow.france || false, // Mapper le champ boolean france
     relay: supabaseRow.point_relais || null,
     newsletter: supabaseRow.newsletter || false,
     orderDate: primaryDate || null, // Utilise date_retrait en priorité
@@ -290,6 +292,7 @@ function generateMockDataForDevelopment(): RawRow[] {
       id: i + 1,
       passports: nbPassports,
       country: selectedCountry,
+      france: selectedCountry === "France", // Utiliser le champ boolean france
       relay: selectedRelayData.name,
       newsletter: Math.random() > 0.35, // 65% acceptent la newsletter
       orderDate: orderDate.toISOString(),
