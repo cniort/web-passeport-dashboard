@@ -142,9 +142,19 @@ export async function fetchSupabaseResponses(): Promise<RawRow[]> {
  * Transforme une réponse Supabase en RawRow
  */
 function transformSupabaseToRawRow(supabaseRow: SupabaseResponse): RawRow {
-  // Utiliser date_retrait en priorité, puis date_commande comme fallback
-  const primaryDate = supabaseRow.date_retrait || supabaseRow.date_commande;
-  const orderDate = primaryDate ? new Date(primaryDate) : null;
+  // Utiliser les bonnes sources pour chaque date
+  const orderDate = supabaseRow.date_commande ? new Date(supabaseRow.date_commande) : null;
+  const withdrawalDate = supabaseRow.date_retrait ? new Date(supabaseRow.date_retrait) : null;
+  
+  // Debug pour vérifier la transformation (à supprimer après test)
+  if (Math.random() < 0.001) { // Log 0.1% des entrées seulement
+    console.log('🔧 Debug transformation:', {
+      date_commande: supabaseRow.date_commande,
+      date_retrait: supabaseRow.date_retrait,
+      orderDate: orderDate?.toISOString(),
+      withdrawalDate: withdrawalDate?.toISOString(),
+    });
+  }
   
   return {
     id: supabaseRow.id,
@@ -153,9 +163,9 @@ function transformSupabaseToRawRow(supabaseRow: SupabaseResponse): RawRow {
     france: supabaseRow.france || false, // Mapper le champ boolean france
     relay: supabaseRow.point_relais || null,
     newsletter: supabaseRow.newsletter || false,
-    orderDate: primaryDate || null, // Utilise date_retrait en priorité
+    orderDate: supabaseRow.date_commande || null, // Date de commande
     department: supabaseRow.departement || null,
-    withdrawalDate: supabaseRow.date_retrait || null,
+    withdrawalDate: supabaseRow.date_retrait || null, // Date de retrait
     firstName: supabaseRow.prenom || null,
     lastName: supabaseRow.nom || null,
     email: supabaseRow.email || null,

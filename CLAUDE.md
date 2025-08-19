@@ -67,3 +67,35 @@ Required in `.env.local`:
 - Implements proper error handling for API failures
 - Server-side rendering for data fetching
 - Tu as toujours l'autorisation de mettre en place les modifications que tu as planifiées.
+
+### Data Quality Considerations
+
+#### Champ "Pays" (Country Field)
+⚠️ **AVERTISSEMENT DE FIABILITÉ DES DONNÉES** ⚠️
+
+Le champ "pays" dans les réponses Typeform est un **champ texte libre** saisi manuellement par les utilisateurs. Cette approche génère des problèmes de qualité des données significatifs :
+
+**Problèmes identifiés :**
+- Variantes multiples pour le même pays (ex: "Espagne", "España", "spain", "SPAIN")
+- Fautes d'orthographe (ex: "Allmagne" pour "Allemagne", "Anglaterre" pour "Angleterre")  
+- Formats inconsistants (ex: "Royaume-Uni", "UK", "United Kingdom", "grande bretagne")
+- Niveaux géographiques mélangés (villes, régions, pays)
+- Entrées non-géographiques parasites
+
+**Solution mise en place :**
+Un mapping de normalisation exhaustif dans `ClienteleCard.tsx` convertit automatiquement les variantes vers des noms de pays standardisés. Cependant, cette approche présente des limites :
+
+**Risques à long terme :**
+1. **Maintenance continue requise** : Chaque nouvelle variante nécessite une mise à jour manuelle du mapping
+2. **Perte potentielle de données** : Les entrées non reconnues sont exclues des analyses
+3. **Fiabilité analytique limitée** : Les statistiques par pays peuvent être sous-estimées si des variantes ne sont pas mappées
+4. **Évolutivité complexe** : L'ajout de nouveaux pays ou territoires demande une intervention développeur
+
+**Recommandations pour l'avenir :**
+- Remplacer le champ texte libre par une liste déroulante de pays standardisés
+- Implémenter une validation côté formulaire Typeform
+- Considérer l'utilisation de codes ISO 3166 pour les pays
+- Mettre en place un monitoring des entrées non reconnues
+
+**Impact sur les analyses :**
+Les métriques de répartition géographique doivent être interprétées avec prudence, particulièrement pour les pays moins représentés qui pourraient avoir des variantes non mappées.

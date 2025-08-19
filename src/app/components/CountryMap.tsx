@@ -3,6 +3,7 @@
 import React from "react";
 import { Globe } from "lucide-react";
 import type { TopItem } from "@/app/lib/enhanced-kpis";
+import { formatDecimal } from '@/app/lib/format';
 
 interface CountryMapProps {
   countries: TopItem[];
@@ -97,7 +98,7 @@ export default function CountryMap({ countries, title }: CountryMapProps) {
                     <div>
                       <div className="font-medium text-slate-900">{info.name}</div>
                       <div className="text-xs text-slate-500">
-                        {country.percentage.toFixed(1)}% du total
+                        {formatDecimal(country.percentage)}% du total
                       </div>
                     </div>
                   </div>
@@ -125,7 +126,7 @@ export default function CountryMap({ countries, title }: CountryMapProps) {
               </div>
               <div>
                 <div className="text-2xl font-bold text-slate-900">
-                  {countries[0]?.percentage.toFixed(1) || 0}%
+                  {formatDecimal(countries[0]?.percentage || 0)}%
                 </div>
                 <div className="text-xs text-slate-500">Top pays</div>
               </div>
