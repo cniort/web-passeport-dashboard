@@ -6,7 +6,7 @@ import { REGION_STATS, getDepartmentFromRelay } from '@/app/config/relay-regions
 import { formatDecimal } from '@/app/lib/format';
 import { RelayPointModalV2 } from './RelayPointModalV2';
 
-interface RegionalDistributionV2Props {
+interface RegionalDistributionV2WithTableModalProps {
   kpis: ComprehensiveKpis;
   rawData?: RawRow[];
   selectedYear?: number;
@@ -27,7 +27,7 @@ interface RegionData {
   departments: DepartmentData[];
 }
 
-export function RegionalDistributionV2({ kpis, rawData, selectedYear }: RegionalDistributionV2Props) {
+export function RegionalDistributionV2WithTableModal({ kpis, rawData, selectedYear }: RegionalDistributionV2WithTableModalProps) {
   const [expandedRegion, setExpandedRegion] = useState<string | null>(null);
   const [showAllRelaysModal, setShowAllRelaysModal] = useState<boolean>(false);
 
@@ -98,11 +98,6 @@ export function RegionalDistributionV2({ kpis, rawData, selectedYear }: Regional
         passports: topRelayPassports
       };
     }
-
-    // Debug : Afficher les counts départementaux
-    console.log('🏛️ Department counts:', departmentCounts);
-    console.log('🏛️ Relay counts sample:', Object.entries(relayCounts).slice(0, 5));
-    console.log('🏛️ Top relay:', topRelayData);
 
     // Définir l'ordre nord-sud pour les régions et départements
     const regionOrder = [
@@ -199,7 +194,6 @@ export function RegionalDistributionV2({ kpis, rawData, selectedYear }: Regional
         </div>
       )}
 
-
       {/* Titre pour la répartition régionale */}
       <h4 className="text-sm font-semibold text-gray-700 mb-3">Répartition régionale</h4>
 
@@ -251,7 +245,7 @@ export function RegionalDistributionV2({ kpis, rawData, selectedYear }: Regional
         })}
       </div>
 
-      {/* Modal pour tous les points relais */}
+      {/* Modal pour tous les points relais V2 avec tableau */}
       <RelayPointModalV2
         isOpen={showAllRelaysModal}
         onClose={() => setShowAllRelaysModal(false)}

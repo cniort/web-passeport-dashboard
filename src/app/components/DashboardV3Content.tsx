@@ -11,20 +11,18 @@ import { fetchSupabaseResponses, type RawRow } from "@/app/lib/supabase-data";
 import { computeComprehensiveKpis, type ComprehensiveKpis } from "@/app/lib/comprehensive-kpis";
 
 // Composants
-import PrototypeFilterSection from "@/app/components/PrototypeFilterSection";
-import ExportButton from "@/app/components/ExportButton";
+import FilterSectionV3 from "@/app/components/FilterSectionV3";
 import ShareButton from "@/app/components/ShareButton";
-import DownloadButton from "@/app/components/DownloadButton";
 import { DashboardSkeleton } from "@/app/components/SkeletonLoaders";
 import { SeasonalityCardTest } from "@/app/components/SeasonalityCard.test";
 import { RegionalDistributionV2 } from "@/app/components/RegionalDistributionV2";
 import { ClienteleCard } from "@/app/components/ClienteleCard";
-import { MainKpisCard } from "@/app/components/MainKpisCard";
+import { MainKpisV2Card } from "@/app/components/MainKpisV2Card";
 import { BehaviorCard } from "@/app/components/BehaviorCard";
 
 const AVAILABLE_YEARS = [2025, 2024, 2023] as const;
 
-export default function DashboardContent() {
+export default function DashboardV3Content() {
   const { filters, setFilters } = useDashboardState();
   const [filteredData, setFilteredData] = useState<RawRow[]>([]);
 
@@ -117,11 +115,11 @@ export default function DashboardContent() {
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <h1 className="text-3xl font-bold text-slate-900">
-              Dashboard – Opération Passeport
+              Dashboard V3 – Opération Passeport
             </h1>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Version stable
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                V3 : amélioration de la zone de filtres
               </span>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
                 Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')} {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
@@ -129,30 +127,31 @@ export default function DashboardContent() {
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <DownloadButton filters={filters} kpis={kpis} rawData={rawData} />
-            <ShareButton />
-          </div>
+          <ShareButton />
         </header>
 
-        {/* Section des filtres */}
-        <PrototypeFilterSection 
+        {/* Section des filtres V3 avec nouveau design */}
+        <FilterSectionV3 
           filters={filters}
           setFilters={setFilters}
           availableYears={Array.from(AVAILABLE_YEARS)}
           filteredData={filteredData}
           totalData={rawData || []}
+          onExport={() => {
+            // Utiliser l'export existant mais avec les données filtrées
+            const exportBtn = document.querySelector('[data-export-button]') as HTMLButtonElement;
+            exportBtn?.click();
+          }}
         />
 
-        {/* KPIs principaux combinés */}
+        {/* KPIs principaux V2 avec graphique donut */}
         <section>
-          <MainKpisCard 
+          <MainKpisV2Card 
             kpis={kpis} 
             selectedYear={filters.selectedYear}
             compareYear={filters.compareYear}
           />
         </section>
-
 
         {/* Section saisonnalité et répartition géographique */}
         <section className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start lg:gap-4">
@@ -168,7 +167,6 @@ export default function DashboardContent() {
           <ClienteleCard kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
           <BehaviorCard kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
         </section>
-
 
       </div>
     </div>

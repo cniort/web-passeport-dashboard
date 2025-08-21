@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 
-export type FilterPeriod = "year" | "month" | "quarter";
+export type FilterPeriod = "year" | "month" | "quarter" | "custom";
 
 export interface DashboardFilters {
-  selectedYear: number;
+  selectedYear?: number; // Optionnel pour permettre "toutes les années"
   selectedMonth?: number;
   selectedQuarter?: number;
   period: FilterPeriod;
   compareYear?: number;
+  customStartDate?: string;
+  customEndDate?: string;
+  filtersEnabled: boolean; // Nouveau champ pour activer/désactiver les filtres
 }
 
 export interface DashboardState {
@@ -19,8 +22,9 @@ export interface DashboardState {
 }
 
 const defaultFilters: DashboardFilters = {
-  selectedYear: 2025,
+  selectedYear: undefined, // Par défaut : toutes les données, pas de filtre
   period: "year",
+  filtersEnabled: false, // Par défaut, pas de filtres = toutes les données
 };
 
 export function useDashboardState(): DashboardState {

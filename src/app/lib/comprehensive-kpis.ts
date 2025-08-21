@@ -81,6 +81,13 @@ export interface ComprehensiveKpis {
   highSeasonPercentage: number;
   offSeasonPercentage: number;
 
+  // 8. Répartition des passeports par commande
+  ordersWithOnePassport: number;
+  ordersWithTwoPassports: number;
+  ordersWithThreePassports: number;
+  ordersWithFourPassports: number;
+  ordersWithFivePlusPassports: number;
+
   // Données pour comparaison année précédente
   comparison?: ComprehensiveKpis;
 }
@@ -90,21 +97,28 @@ export interface ComprehensiveKpis {
  */
 export function computeComprehensiveKpis(
   data: RawRow[], 
-  year: number,
+  year?: number,
   compareYear?: number
 ): ComprehensiveKpis {
-  console.log(`📊 Calcul des KPIs complets pour ${year}...`);
+  let currentYearData: RawRow[];
   
-  // Filtrer les données pour l'année courante
-  const currentYearData = data.filter(row => {
-    if (!row.orderDate) return false;
-    return new Date(row.orderDate).getFullYear() === year;
-  });
+  if (year) {
+    console.log(`📊 Calcul des KPIs complets pour ${year}...`);
+    // Filtrer les données pour l'année courante
+    currentYearData = data.filter(row => {
+      if (!row.orderDate) return false;
+      return new Date(row.orderDate).getFullYear() === year;
+    });
+  } else {
+    console.log(`📊 Calcul des KPIs complets pour TOUTES les données...`);
+    // Utiliser toutes les données sans filtre d'année
+    currentYearData = data;
+  }
 
   const kpis = calculateKpisForYear(currentYearData);
 
   // Calcul de comparaison si année de comparaison fournie
-  if (compareYear) {
+  if (compareYear && year) { // Comparaison seulement si on a une année de base
     const compareYearData = data.filter(row => {
       if (!row.orderDate) return false;
       return new Date(row.orderDate).getFullYear() === compareYear;
@@ -291,6 +305,28 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
   const highSeasonPercentage = totalSeasonPassports > 0 ? (highSeasonPassports / totalSeasonPassports) * 100 : 0;
   const offSeasonPercentage = 100 - highSeasonPercentage;
 
+  // 8. Répartition des passeports par commande
+  let ordersWithOnePassport = 0;
+  let ordersWithTwoPassports = 0;
+  let ordersWithThreePassports = 0;
+  let ordersWithFourPassports = 0;
+  let ordersWithFivePlusPassports = 0;
+
+  yearData.forEach(row => {
+    const passportCount = row.passports || 0;
+    if (passportCount === 1) {
+      ordersWithOnePassport++;
+    } else if (passportCount === 2) {
+      ordersWithTwoPassports++;
+    } else if (passportCount === 3) {
+      ordersWithThreePassports++;
+    } else if (passportCount === 4) {
+      ordersWithFourPassports++;
+    } else if (passportCount >= 5) {
+      ordersWithFivePlusPassports++;
+    }
+  });
+
   return {
     // 1. Passeports et commandes
     passportsOrdered,
@@ -346,6 +382,13 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
     highSeasonPassports,
     offSeasonPassports,
     highSeasonPercentage,
-    offSeasonPercentage
+    offSeasonPercentage,
+
+    // 8. Répartition des passeports par commande
+    ordersWithOnePassport,
+    ordersWithTwoPassports,
+    ordersWithThreePassports,
+    ordersWithFourPassports,
+    ordersWithFivePlusPassports
   };
 }

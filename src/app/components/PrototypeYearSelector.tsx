@@ -10,21 +10,30 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 
-interface YearSelectorProps {
-  selectedYear: number;
+interface PrototypeYearSelectorProps {
+  selectedYear?: number; // Peut être undefined pour "toutes les années"
   availableYears: number[];
-  onYearChange: (year: number) => void;
+  onYearChange: (year: number | undefined) => void; // Accepte aussi undefined
   compareYear?: number;
   onCompareYearChange?: (year: number | undefined) => void;
 }
 
-export default function YearSelector({
+export default function PrototypeYearSelector({
   selectedYear,
   availableYears,
   onYearChange,
   compareYear,
   onCompareYearChange,
-}: YearSelectorProps) {
+}: PrototypeYearSelectorProps) {
+  
+  const handleYearClick = (year: number) => {
+    // Si on clique sur l'année déjà sélectionnée, la désélectionner (retour à "tout")
+    if (year === selectedYear) {
+      onYearChange(undefined); // Désélectionner = pas d'année = toutes les données
+    } else {
+      onYearChange(year); // Sélectionner cette année
+    }
+  };
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-2">
@@ -37,11 +46,14 @@ export default function YearSelector({
             key={year}
             variant="outline"
             size="sm"
-            onClick={() => onYearChange(year)}
-            className={year === selectedYear 
-              ? "bg-blue-600 hover:bg-blue-700 border-blue-600 text-white" 
-              : "border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400"
-            }
+            onClick={() => handleYearClick(year)}
+            style={{
+              backgroundColor: year === selectedYear ? '#2563eb' : '#ffffff',
+              color: year === selectedYear ? '#ffffff' : '#334155',
+              borderColor: year === selectedYear ? '#2563eb' : '#cbd5e1',
+              fontWeight: '500'
+            }}
+            className="border rounded-md px-3 py-1 text-sm transition-colors hover:bg-slate-100"
           >
             {year}
           </Button>
@@ -55,15 +67,15 @@ export default function YearSelector({
             value={compareYear?.toString() || "none"}
             onValueChange={(value) => onCompareYearChange(value === "none" ? undefined : Number(value))}
           >
-            <SelectTrigger className="w-40 border-slate-300 text-slate-700">
+            <SelectTrigger className="w-40 border-slate-300 bg-white text-slate-700 hover:border-slate-400">
               <SelectValue placeholder="Comparer à..." />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Aucune comparaison</SelectItem>
+            <SelectContent className="bg-white border-slate-200">
+              <SelectItem value="none" className="text-slate-700">Aucune comparaison</SelectItem>
               {availableYears
                 .filter(year => year !== selectedYear)
                 .map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
+                  <SelectItem key={year} value={year.toString()} className="text-slate-700">
                     {year}
                   </SelectItem>
                 ))}

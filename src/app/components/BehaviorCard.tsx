@@ -20,7 +20,7 @@ interface BehaviorData {
   topWithdrawalDays: Array<{ day: number; dayName: string; count: number; rank: number }>;
 }
 
-export function BehaviorCard({ kpis, rawData, selectedYear = 2025 }: BehaviorCardProps) {
+export function BehaviorCard({ kpis, rawData, selectedYear }: BehaviorCardProps) {
   // Calculer les données comportementales à partir des données brutes
   const behaviorData = useMemo((): BehaviorData => {
     if (!rawData) {
@@ -35,11 +35,11 @@ export function BehaviorCard({ kpis, rawData, selectedYear = 2025 }: BehaviorCar
       };
     }
 
-    // Filtrer les données pour l'année sélectionnée
-    const currentYearData = rawData.filter(row => {
+    // Filtrer les données seulement si une année est sélectionnée
+    const currentYearData = selectedYear ? rawData.filter(row => {
       const orderDate = row.orderDate ? new Date(row.orderDate) : null;
       return orderDate && orderDate.getFullYear() === selectedYear;
-    });
+    }) : rawData; // Si pas d'année sélectionnée = toutes les données
 
     const monthNames = [
       'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',

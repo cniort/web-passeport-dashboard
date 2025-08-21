@@ -156,6 +156,7 @@ export default function ExportButton({ data, kpis, fileName = "dashboard-export"
   return (
     <div className="relative">
       <button
+        data-export-button
         onClick={() => setShowDropdown(!showDropdown)}
         disabled={isExporting}
         className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${

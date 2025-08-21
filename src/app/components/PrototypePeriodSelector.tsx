@@ -3,16 +3,8 @@
 import React from "react";
 import { Clock } from "lucide-react";
 import type { FilterPeriod } from "@/app/hooks/useDashboardState";
-// import { Button } from "@/app/components/ui/button";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/app/components/ui/select";
 
-interface PeriodSelectorProps {
+interface PrototypePeriodSelectorProps {
   period: FilterPeriod;
   onPeriodChange: (period: FilterPeriod) => void;
   selectedMonth?: number;
@@ -43,14 +35,14 @@ const QUARTERS = [
   { value: 4, label: "Q4 (Oct-Déc)" },
 ];
 
-export default function PeriodSelector({
+export default function PrototypePeriodSelector({
   period,
   onPeriodChange,
   selectedMonth,
   selectedQuarter,
   onMonthChange,
   onQuarterChange,
-}: PeriodSelectorProps) {
+}: PrototypePeriodSelectorProps) {
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-2">
@@ -63,11 +55,13 @@ export default function PeriodSelector({
           <button
             key={p}
             onClick={() => onPeriodChange(p)}
-            className={`rounded-lg border px-3 py-1 text-sm transition-colors ${
-              p === period
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-            }`}
+            style={{
+              backgroundColor: p === period ? '#2563eb' : '#ffffff',
+              color: p === period ? '#ffffff' : '#334155',
+              borderColor: p === period ? '#2563eb' : '#cbd5e1',
+              fontWeight: '500'
+            }}
+            className="rounded-lg border px-3 py-1 text-sm transition-colors hover:bg-slate-50"
           >
             {p === "year" ? "Année" : p === "quarter" ? "Trimestre" : p === "month" ? "Mois" : "Plage libre"}
           </button>
@@ -78,7 +72,7 @@ export default function PeriodSelector({
         <select
           value={selectedMonth || ""}
           onChange={(e) => onMonthChange(e.target.value ? Number(e.target.value) : undefined)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700 hover:border-slate-300 focus:border-slate-400 focus:outline-none"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm text-slate-700 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
         >
           <option value="">Tous les mois</option>
           {MONTHS.map((month) => (
@@ -93,7 +87,7 @@ export default function PeriodSelector({
         <select
           value={selectedQuarter || ""}
           onChange={(e) => onQuarterChange(e.target.value ? Number(e.target.value) : undefined)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700 hover:border-slate-300 focus:border-slate-400 focus:outline-none"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm text-slate-700 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
         >
           <option value="">Tous les trimestres</option>
           {QUARTERS.map((quarter) => (

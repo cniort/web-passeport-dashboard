@@ -3,6 +3,7 @@ import { Users, Flag, Home, Globe, ChevronDown, ChevronRight } from 'lucide-reac
 import type { ComprehensiveKpis } from '@/app/lib/comprehensive-kpis';
 import type { RawRow } from "@/app/lib/supabase-data";
 import { formatDecimal } from '@/app/lib/format';
+import { CountryModal } from './CountryModal';
 
 interface ClienteleCardProps {
   kpis: ComprehensiveKpis;
@@ -16,10 +17,12 @@ interface CountryData {
   count: number;
   percentage: number;
   flag: string;
+  passports: number;
 }
 
-export function ClienteleCard({ kpis, rawData, selectedYear = 2025 }: ClienteleCardProps) {
+export function ClienteleCard({ kpis, rawData, selectedYear }: ClienteleCardProps) {
   const [showAllCountries, setShowAllCountries] = useState(false);
+  const [showCountryModal, setShowCountryModal] = useState(false);
 
   // Mapping complet pour normaliser tous les pays
   const countryNormalization: Record<string, string> = {
@@ -143,16 +146,17 @@ export function ClienteleCard({ kpis, rawData, selectedYear = 2025 }: ClienteleC
   const countriesData = useMemo(() => {
     if (!rawData) return [];
 
-    // Filtrer les données pour l'année sélectionnée  
-    const currentYearData = rawData.filter(row => {
+    // Filtrer les données seulement si une année est sélectionnée
+    const currentYearData = selectedYear ? rawData.filter(row => {
       const orderDate = row.orderDate ? new Date(row.orderDate) : null;
       return orderDate && orderDate.getFullYear() === selectedYear;
-    });
+    }) : rawData; // Si pas d'année sélectionnée = toutes les données
 
     const totalYearlyOrders = kpis.totalOrders;
 
-    // Calculer les données par pays normalisés
+    // Calculer les données par pays normalisés (commandes et passeports)
     const normalizedCountryCounts: Record<string, number> = {};
+    const normalizedCountryPassports: Record<string, number> = {};
     
     currentYearData.forEach(row => {
       const rawCountry = row.country || 'Inconnu';
@@ -162,6 +166,7 @@ export function ClienteleCard({ kpis, rawData, selectedYear = 2025 }: ClienteleC
       // Exclure la France et les territoires français du calcul étranger
       if (normalizedCountry !== 'France' && normalizedCountry !== 'France (Outre-mer)') {
         normalizedCountryCounts[normalizedCountry] = (normalizedCountryCounts[normalizedCountry] || 0) + 1;
+        normalizedCountryPassports[normalizedCountry] = (normalizedCountryPassports[normalizedCountry] || 0) + (row.passports || 0);
       }
     });
 
@@ -201,13 +206,15 @@ export function ClienteleCard({ kpis, rawData, selectedYear = 2025 }: ClienteleC
       if (country !== 'Inconnu') {
         const percentage = totalYearlyOrders > 0 ? (count / totalYearlyOrders) * 100 : 0;
         const countryInfo = countryMapping[country];
+        const passports = normalizedCountryPassports[country] || 0;
         
         countries.push({
           name: countryInfo?.name || country,
           code: country,
           count,
           percentage,
-          flag: countryInfo?.flag || '🏴'
+          flag: countryInfo?.flag || '🏴',
+          passports
         });
       }
     });
@@ -219,9 +226,9 @@ export function ClienteleCard({ kpis, rawData, selectedYear = 2025 }: ClienteleC
   const frenchPercentage = kpis.frenchClientele;
   const foreignPercentage = kpis.foreignClientele.totalPercentage;
   
-  // Séparer les 5 premiers pays du reste
-  const topCountries = countriesData.slice(0, 5);
-  const remainingCountries = countriesData.slice(5);
+  // Séparer les 3 premiers pays du reste
+  const topCountries = countriesData.slice(0, 3);
+  const remainingCountries = countriesData.slice(3);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -247,7 +254,7 @@ export function ClienteleCard({ kpis, rawData, selectedYear = 2025 }: ClienteleC
           <div className="text-xs text-blue-700">
             {(() => {
               const count = Math.round((frenchPercentage / 100) * kpis.totalOrders);
-              return `${count.toLocaleString('fr-FR')} commande${count > 1 ? 's' : ''}`;
+              return `${count.toLocaleString('fr-FR')} commande${count <= 1 ? '' : 's'}`;
             })()}
           </div>
         </div>
@@ -263,7 +270,7 @@ export function ClienteleCard({ kpis, rawData, selectedYear = 2025 }: ClienteleC
           <div className="text-xs text-green-700">
             {(() => {
               const count = Math.round((foreignPercentage / 100) * kpis.totalOrders);
-              return `${count.toLocaleString('fr-FR')} commande${count > 1 ? 's' : ''}`;
+              return `${count.toLocaleString('fr-FR')} commande${count <= 1 ? '' : 's'}`;
             })()}
           </div>
         </div>
@@ -282,50 +289,41 @@ export function ClienteleCard({ kpis, rawData, selectedYear = 2025 }: ClienteleC
             </div>
             <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <span className="text-blue-600 font-semibold">{formatDecimal(country.percentage)}%</span>
-              <span>{country.count.toLocaleString('fr-FR')} commande{country.count > 1 ? 's' : ''}</span>
+              <span>{country.count.toLocaleString('fr-FR')} commande{country.count <= 1 ? '' : 's'}</span>
             </div>
           </div>
         ))}
         
-        {/* Bouton pour afficher/masquer les autres pays */}
+        {/* Bouton pour afficher tous les pays */}
         {remainingCountries.length > 0 && (
-          <>
-            <div 
-              onClick={() => setShowAllCountries(!showAllCountries)}
-              className="flex items-center justify-center p-3 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors group"
-            >
-              <div className="flex items-center gap-2">
-                {showAllCountries ? (
-                  <ChevronDown className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
-                )}
-                <span className="text-sm font-medium text-gray-700">
-                  {showAllCountries ? 'Masquer' : 'Voir'} les autres pays ({remainingCountries.length})
-                </span>
-              </div>
+          <div 
+            onClick={() => setShowCountryModal(true)}
+            className="flex items-center justify-center p-3 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors group"
+          >
+            <div className="flex items-center gap-2">
+              <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
+              <span className="text-sm font-medium text-gray-700">
+                Voir les autres pays ({remainingCountries.length})
+              </span>
             </div>
-            
-            {/* Pays supplémentaires (dépliables) */}
-            {showAllCountries && (
-              <div className="ml-6 pl-4 border-l-2 border-gray-200 space-y-2">
-                {remainingCountries.map((country) => (
-                  <div key={country.code} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">{country.flag}</span>
-                      <span className="text-sm text-gray-600">{country.name}</span>
-                    </div>
-                    <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <span className="text-blue-600 font-semibold">{formatDecimal(country.percentage)}%</span>
-                      <span>{country.count.toLocaleString('fr-FR')} commande{country.count > 1 ? 's' : ''}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
+          </div>
         )}
       </div>
+
+      {/* Modal pour tous les pays */}
+      <CountryModal
+        isOpen={showCountryModal}
+        onClose={() => setShowCountryModal(false)}
+        countries={countriesData.map(country => ({
+          name: country.name,
+          code: country.code,
+          orders: country.count,
+          percentage: country.percentage,
+          flag: country.flag,
+          passports: country.passports
+        }))}
+        totalOrders={kpis.totalOrders}
+      />
     </div>
   );
 }

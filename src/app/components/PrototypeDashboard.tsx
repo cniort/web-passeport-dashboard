@@ -1,20 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
-// Hooks
 import { useDashboardState } from "@/app/hooks/useDashboardState";
 import { useCache } from "@/app/hooks/useCache";
-
-// Types et fonctions
 import { fetchSupabaseResponses, type RawRow } from "@/app/lib/supabase-data";
 import { computeComprehensiveKpis, type ComprehensiveKpis } from "@/app/lib/comprehensive-kpis";
-
-// Composants
 import PrototypeFilterSection from "@/app/components/PrototypeFilterSection";
-import ExportButton from "@/app/components/ExportButton";
 import ShareButton from "@/app/components/ShareButton";
-import DownloadButton from "@/app/components/DownloadButton";
 import { DashboardSkeleton } from "@/app/components/SkeletonLoaders";
 import { SeasonalityCardTest } from "@/app/components/SeasonalityCard.test";
 import { RegionalDistributionV2 } from "@/app/components/RegionalDistributionV2";
@@ -24,7 +16,7 @@ import { BehaviorCard } from "@/app/components/BehaviorCard";
 
 const AVAILABLE_YEARS = [2025, 2024, 2023] as const;
 
-export default function DashboardContent() {
+export default function PrototypeDashboard() {
   const { filters, setFilters } = useDashboardState();
   const [filteredData, setFilteredData] = useState<RawRow[]>([]);
 
@@ -47,42 +39,49 @@ export default function DashboardContent() {
     if (rawData && !dataLoading) {
       setKpisLoading(true);
       try {
-        const comprehensiveKpis = computeComprehensiveKpis(rawData, filters.selectedYear, filters.compareYear);
-        setKpis(comprehensiveKpis);
-        
-        // Filtrer les données pour le tableau selon les filtres actuels
-        const filtered = rawData.filter((row) => {
-          const d = row.orderDate ? new Date(row.orderDate) : null;
-          if (!d) return false;
+        // Si les filtres sont désactivés ou selectedYear est undefined, afficher TOUTES les données
+        if (!filters.filtersEnabled || !filters.selectedYear) {
+          const comprehensiveKpis = computeComprehensiveKpis(rawData); // Pas de filtre d'année
+          setKpis(comprehensiveKpis);
+          setFilteredData(rawData); // Toutes les données
+        } else {
+          const comprehensiveKpis = computeComprehensiveKpis(rawData, filters.selectedYear, filters.compareYear);
+          setKpis(comprehensiveKpis);
           
-          // Mode plage personnalisée
-          if (filters.period === "custom") {
-            if (filters.customStartDate && filters.customEndDate) {
-              const startDate = new Date(filters.customStartDate);
-              const endDate = new Date(filters.customEndDate);
-              endDate.setHours(23, 59, 59, 999); // Inclure toute la journée de fin
-              return d >= startDate && d <= endDate;
+          // Filtrer les données selon les filtres actuels
+          const filtered = rawData.filter((row) => {
+            const d = row.orderDate ? new Date(row.orderDate) : null;
+            if (!d) return false;
+            
+            // Mode plage personnalisée
+            if (filters.period === "custom") {
+              if (filters.customStartDate && filters.customEndDate) {
+                const startDate = new Date(filters.customStartDate);
+                const endDate = new Date(filters.customEndDate);
+                endDate.setHours(23, 59, 59, 999);
+                return d >= startDate && d <= endDate;
+              }
+              return true;
             }
+            
+            // Filtres classiques par année
+            const year = d.getFullYear();
+            if (year !== filters.selectedYear) return false;
+            
+            if (filters.period === "month" && filters.selectedMonth) {
+              return d.getMonth() + 1 === filters.selectedMonth;
+            }
+            
+            if (filters.period === "quarter" && filters.selectedQuarter) {
+              const quarter = Math.floor(d.getMonth() / 3) + 1;
+              return quarter === filters.selectedQuarter;
+            }
+            
             return true;
-          }
+          });
           
-          // Filtres classiques par année
-          const year = d.getFullYear();
-          if (year !== filters.selectedYear) return false;
-          
-          if (filters.period === "month" && filters.selectedMonth) {
-            return d.getMonth() + 1 === filters.selectedMonth;
-          }
-          
-          if (filters.period === "quarter" && filters.selectedQuarter) {
-            const quarter = Math.floor(d.getMonth() / 3) + 1;
-            return quarter === filters.selectedQuarter;
-          }
-          
-          return true;
-        });
-        
-        setFilteredData(filtered);
+          setFilteredData(filtered);
+        }
       } catch (error) {
         console.error("Erreur lors du calcul des KPIs:", error);
       } finally {
@@ -113,29 +112,21 @@ export default function DashboardContent() {
   return (
     <div id="dashboard-content" className="min-h-screen bg-slate-50 p-6 sm:p-10">
       <div className="mx-auto max-w-7xl space-y-4">
-        {/* Header avec titre et export */}
+        {/* Header avec titre et partage */}
         <header className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div>
             <h1 className="text-3xl font-bold text-slate-900">
               Dashboard – Opération Passeport
             </h1>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Version stable
-              </span>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')} {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
+            <p className="text-sm text-orange-600 font-medium mt-1">
+              🧪 Version Prototype - Zone filtres améliorée
+            </p>
           </div>
           
-          <div className="flex items-center gap-2">
-            <DownloadButton filters={filters} kpis={kpis} rawData={rawData} />
-            <ShareButton />
-          </div>
+          <ShareButton />
         </header>
 
-        {/* Section des filtres */}
+        {/* Section des filtres prototype */}
         <PrototypeFilterSection 
           filters={filters}
           setFilters={setFilters}
@@ -153,13 +144,9 @@ export default function DashboardContent() {
           />
         </section>
 
-
         {/* Section saisonnalité et répartition géographique */}
         <section className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start lg:gap-4">
-          {/* Nouvelle card saisonnalité et répartition trimestrielle */}
           <SeasonalityCardTest kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
-          
-          {/* Nouvelle card répartition géographique V2 */}
           <RegionalDistributionV2 kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
         </section>
 
@@ -168,8 +155,6 @@ export default function DashboardContent() {
           <ClienteleCard kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
           <BehaviorCard kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
         </section>
-
-
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ interface MonthlyData {
   percentage: number;
 }
 
-export function SeasonalityCardTest({ kpis, rawData, selectedYear = 2025 }: SeasonalityCardTestProps) {
+export function SeasonalityCardTest({ kpis, rawData, selectedYear }: SeasonalityCardTestProps) {
   const [expandedQuarter, setExpandedQuarter] = useState<number | null>(null);
   
   const highSeasonPercentage = kpis.highSeasonPercentage;
@@ -58,11 +58,11 @@ export function SeasonalityCardTest({ kpis, rawData, selectedYear = 2025 }: Seas
     // Grouper les données par mois (nombre de commandes)
     const monthlyOrderCounts: { [key: number]: number } = {};
     
-    // Filtrer les données pour l'année sélectionnée
-    const currentYearData = rawData.filter(row => {
+    // Filtrer les données seulement si une année est sélectionnée
+    const currentYearData = selectedYear ? rawData.filter(row => {
       const orderDate = row.orderDate ? new Date(row.orderDate) : null;
       return orderDate && orderDate.getFullYear() === selectedYear;
-    });
+    }) : rawData; // Si pas d'année sélectionnée = toutes les données
 
     currentYearData.forEach(row => {
       if (row.orderMonth) {
@@ -137,7 +137,7 @@ export function SeasonalityCardTest({ kpis, rawData, selectedYear = 2025 }: Seas
           <div className="text-2xl font-bold text-blue-900 mb-1">
             {formatDecimal(offSeasonPercentage)}%
           </div>
-          <div className="text-xs text-blue-700">Reste de l'année</div>
+          <div className="text-xs text-blue-700">Reste de l&apos;année</div>
         </div>
       </div>
 

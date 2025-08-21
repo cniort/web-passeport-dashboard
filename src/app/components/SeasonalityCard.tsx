@@ -63,7 +63,7 @@ export function SeasonalityCard({ kpis }: SeasonalityCardProps) {
           <div className="text-2xl font-bold text-blue-900 mb-1">
             {formatDecimal(offSeasonPercentage)}%
           </div>
-          <div className="text-xs text-blue-700">Reste de l'année</div>
+          <div className="text-xs text-blue-700">Reste de l&apos;année</div>
         </div>
       </div>
 
