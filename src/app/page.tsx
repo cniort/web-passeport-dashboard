@@ -1,16 +1,17 @@
 // src/app/page.tsx
 import React from "react";
 import { computeKpis, yoy } from "@/app/lib/kpis";
-import { fetchTypeformRows, type RawRow } from "@/app/lib/typeform";
+import { fetchTypeformResponses } from "@/app/lib/typeform";
+import { type CleanResponse } from "@/app/lib/clean";
 import KpiCard from "@/app/components/KpiCard";
 import { Package, ShoppingCart, BarChart3, Calendar } from "lucide-react";
 
 const YEARS = [2025, 2024] as const;
 
 export default async function Page() {
-  let rows: RawRow[] = [];
+  let rows: CleanResponse[] = [];
   try {
-    rows = await fetchTypeformRows();
+    rows = await fetchTypeformResponses();
   } catch {
     rows = [];
   }

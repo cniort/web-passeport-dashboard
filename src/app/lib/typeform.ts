@@ -61,7 +61,7 @@ export async function fetchTypeformResponses(): Promise<CleanResponse[]> {
       "Votre pays de résidence 🌍":
         answers["9af37d76-64bc-42a9-890b-96416088a5ed"]?.label === "France" ? "France" : "",
       "What country are you from ? 🌍": answers["bbf87d44-a48b-4535-83b6-31ee50bad183"] || "",
-      "Votre département 📌": null, // à compléter si champ présent
+      "Votre département 📌": undefined, // à compléter si champ présent
       "Dans quel point relais souhaitez-vous retirer votre Passeport La Vélodyssée ?":
         answers["85905483-614d-4312-9abf-17a7e2052650"] || "",
       "À chacun son Passeport La Vélodyssée ! Vous voyagez en famille ou à plusieurs, il est possible de commander plusieurs Passeports La Vélodyssée. Combien de Passeport(s) souhaitez-vous commander ?":

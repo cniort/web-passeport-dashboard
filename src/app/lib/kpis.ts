@@ -1,6 +1,6 @@
 // src/app/lib/kpis.ts
-import { parseISO, getYear, getMonth } from "date-fns";
-import type { RawRow } from "./typeform";
+import { getYear, getMonth } from "date-fns";
+import type { CleanResponse } from "./clean";
 
 export type Kpis = {
   year: number;
@@ -16,14 +16,13 @@ export type Kpis = {
   newsletterConvPct: number;
 };
 
-export function computeKpis(rows: RawRow[], year: number): Kpis {
+export function computeKpis(rows: CleanResponse[], year: number): Kpis {
   const rowsY = rows.filter((r) => {
-    const d = r.orderDate ? parseISO(r.orderDate) : null;
-    return d && Number.isFinite(d.getTime()) && getYear(d) === year;
+    return r.dateCommande && getYear(r.dateCommande) === year;
   });
 
   const orders = rowsY.length;
-  const totalPassports = rowsY.reduce((s, r) => s + (Number(r.passports) || 0), 0);
+  const totalPassports = rowsY.reduce((s, r) => s + (r.quantite || 0), 0);
   const avgPassportsPerOrder = orders ? totalPassports / orders : 0;
 
   const relayMap = new Map<string, number>();
@@ -32,15 +31,14 @@ export function computeKpis(rows: RawRow[], year: number): Kpis {
   let newsletterYes = 0;
 
   for (const r of rowsY) {
-    if (r.relay) relayMap.set(r.relay, (relayMap.get(r.relay) ?? 0) + 1);
+    if (r.pointRelais) relayMap.set(r.pointRelais, (relayMap.get(r.pointRelais) ?? 0) + 1);
 
-    const d = r.orderDate ? parseISO(r.orderDate) : null;
-    if (d) {
-      const m = getMonth(d); // 0..11
+    if (r.dateCommande) {
+      const m = getMonth(r.dateCommande); // 0..11
       monthMap.set(m, (monthMap.get(m) ?? 0) + 1);
     }
 
-    if ((r.country ?? "").toUpperCase() === "FR") frCount++;
+    if (r.france) frCount++;
     if (r.newsletter) newsletterYes++;
   }
 
