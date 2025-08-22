@@ -173,21 +173,14 @@ export default function DownloadButton({ filters, kpis, rawData }: DownloadButto
 
   return (
     <div className="relative">
-      <Button
+      <button
         onClick={() => setShowMenu(!showMenu)}
-        variant="outline"
-        size="sm"
-        style={{
-          borderColor: '#60a5fa',
-          color: '#1d4ed8',
-          backgroundColor: '#ffffff'
-        }}
-        className="hover:bg-blue-50 hover:border-blue-500 font-medium transition-all"
+        className="px-3 py-2 text-sm rounded-md transition-colors border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 font-medium flex items-center gap-2"
       >
-        <Download className="h-4 w-4 mr-2" />
+        <Download className="h-4 w-4" />
         Exporter
-        <ChevronDown className={`h-3 w-3 ml-2 transition-transform ${showMenu ? 'rotate-180' : ''}`} />
-      </Button>
+        <ChevronDown className={`h-3 w-3 transition-transform ${showMenu ? 'rotate-180' : ''}`} />
+      </button>
       
       {/* Menu des formats */}
       {showMenu && (

@@ -21,6 +21,7 @@ import { RegionalDistributionV2 } from "@/app/components/RegionalDistributionV2"
 import { ClienteleCard } from "@/app/components/ClienteleCard";
 import { MainKpisCard } from "@/app/components/MainKpisCard";
 import { BehaviorCard } from "@/app/components/BehaviorCard";
+import { NewsletterCard } from "@/app/components/NewsletterCard";
 
 const AVAILABLE_YEARS = [2025, 2024, 2023] as const;
 
@@ -47,13 +48,15 @@ export default function DashboardContent() {
     if (rawData && !dataLoading) {
       setKpisLoading(true);
       try {
-        const comprehensiveKpis = computeComprehensiveKpis(rawData, filters.selectedYear, filters.compareYear);
-        setKpis(comprehensiveKpis);
-        
-        // Filtrer les données pour le tableau selon les filtres actuels
+        // Filtrer les données selon les filtres actuels
         const filtered = rawData.filter((row) => {
           const d = row.orderDate ? new Date(row.orderDate) : null;
           if (!d) return false;
+          
+          // Si les filtres sont désactivés, inclure toutes les données
+          if (filters.filtersEnabled === false) {
+            return true;
+          }
           
           // Mode plage personnalisée
           if (filters.period === "custom") {
@@ -66,23 +69,35 @@ export default function DashboardContent() {
             return true;
           }
           
-          // Filtres classiques par année
-          const year = d.getFullYear();
-          if (year !== filters.selectedYear) return false;
-          
-          if (filters.period === "month" && filters.selectedMonth) {
-            return d.getMonth() + 1 === filters.selectedMonth;
-          }
-          
-          if (filters.period === "quarter" && filters.selectedQuarter) {
-            const quarter = Math.floor(d.getMonth() / 3) + 1;
-            return quarter === filters.selectedQuarter;
+          // Filtres classiques par année (seulement si une année est sélectionnée)
+          if (filters.selectedYear !== undefined) {
+            const year = d.getFullYear();
+            if (year !== filters.selectedYear) return false;
+            
+            if (filters.period === "month" && filters.selectedMonth) {
+              return d.getMonth() + 1 === filters.selectedMonth;
+            }
+            
+            if (filters.period === "quarter" && filters.selectedQuarter) {
+              const quarter = Math.floor(d.getMonth() / 3) + 1;
+              return quarter === filters.selectedQuarter;
+            }
           }
           
           return true;
         });
         
         setFilteredData(filtered);
+        
+        // Calculer les KPIs sur les données filtrées
+        console.log('🔍 DashboardContent filters:', {
+          selectedYear: filters.selectedYear,
+          compareYear: filters.compareYear,
+          filtersEnabled: filters.filtersEnabled
+        });
+        const comprehensiveKpis = computeComprehensiveKpis(filtered, filters.selectedYear, filters.compareYear);
+        setKpis(comprehensiveKpis);
+        
       } catch (error) {
         console.error("Erreur lors du calcul des KPIs:", error);
       } finally {
@@ -148,7 +163,7 @@ export default function DashboardContent() {
         <section>
           <MainKpisCard 
             kpis={kpis} 
-            selectedYear={filters.selectedYear}
+            selectedYear={filters.selectedYear || new Date().getFullYear()}
             compareYear={filters.compareYear}
           />
         </section>
@@ -157,18 +172,22 @@ export default function DashboardContent() {
         {/* Section saisonnalité et répartition géographique */}
         <section className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start lg:gap-4">
           {/* Nouvelle card saisonnalité et répartition trimestrielle */}
-          <SeasonalityCardTest kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
+          <SeasonalityCardTest kpis={kpis} rawData={filteredData} selectedYear={filters.selectedYear} />
           
           {/* Nouvelle card répartition géographique V2 */}
-          <RegionalDistributionV2 kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
+          <RegionalDistributionV2 kpis={kpis} rawData={filteredData} selectedYear={filters.selectedYear} />
         </section>
 
         {/* Section clientèles et comportements */}
         <section className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start lg:gap-4">
-          <ClienteleCard kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
-          <BehaviorCard kpis={kpis} rawData={rawData} selectedYear={filters.selectedYear} />
+          <ClienteleCard kpis={kpis} rawData={filteredData} selectedYear={filters.selectedYear} />
+          <BehaviorCard kpis={kpis} rawData={filteredData} selectedYear={filters.selectedYear} />
         </section>
 
+        {/* Section Newsletter */}
+        <section>
+          <NewsletterCard kpis={kpis} selectedYear={filters.selectedYear} />
+        </section>
 
       </div>
     </div>

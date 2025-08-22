@@ -173,23 +173,65 @@ export function KpiGridSkeleton() {
 // Skeleton pour la page complète
 export function DashboardSkeleton() {
   return (
-    <div className="min-h-screen bg-slate-100 p-6 sm:p-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <HeaderSkeleton />
-        <KpiGridSkeleton />
-        
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <ChartSkeleton title="Évolution temporelle" />
-          <ChartSkeleton title="Données mensuelles" />
+    <div className="min-h-screen bg-slate-50 p-6 sm:p-10">
+      <div className="mx-auto max-w-7xl space-y-4">
+        {/* Header avec titre et export */}
+        <header className="flex flex-wrap items-center justify-between gap-4 animate-pulse">
+          <div className="flex items-center gap-4">
+            <div className="w-80 h-8 bg-slate-200 rounded"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-24 h-6 bg-green-100 rounded-full"></div>
+              <div className="w-48 h-6 bg-gray-100 rounded-full"></div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div className="w-24 h-8 bg-slate-200 rounded"></div>
+            <div className="w-20 h-8 bg-slate-200 rounded"></div>
+          </div>
+        </header>
+
+        {/* Section des filtres */}
+        <div className="rounded-lg border border-dashed border-blue-300 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 shadow-sm p-6 animate-pulse">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="rounded-lg bg-blue-600 p-2 w-8 h-8"></div>
+              <div className="w-48 h-6 bg-slate-200 rounded"></div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-8 bg-slate-200 rounded"></div>
+              <div className="w-16 h-8 bg-slate-200 rounded"></div>
+            </div>
+          </div>
         </div>
-        
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <CountryMapSkeleton />
-          <ChartSkeleton title="Top points relais" />
-          <ChartSkeleton title="Top pays" />
-        </div>
-        
-        <TableSkeleton />
+
+        {/* KPIs principaux */}
+        <section className="animate-pulse">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="w-40 h-6 bg-slate-200 rounded mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="text-center p-4 rounded-lg bg-gray-50">
+                  <div className="w-12 h-6 bg-slate-200 rounded mb-2 mx-auto"></div>
+                  <div className="w-16 h-4 bg-slate-200 rounded mb-1 mx-auto"></div>
+                  <div className="w-20 h-3 bg-slate-200 rounded mx-auto"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Section saisonnalité et répartition géographique */}
+        <section className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start lg:gap-4">
+          <ChartSkeleton />
+          <ChartSkeleton />
+        </section>
+
+        {/* Section clientèles et comportements */}
+        <section className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start lg:gap-4">
+          <ChartSkeleton />
+          <ChartSkeleton />
+        </section>
       </div>
     </div>
   );

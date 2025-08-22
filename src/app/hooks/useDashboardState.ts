@@ -22,9 +22,9 @@ export interface DashboardState {
 }
 
 const defaultFilters: DashboardFilters = {
-  selectedYear: undefined, // Par défaut : toutes les données, pas de filtre
+  selectedYear: new Date().getFullYear(), // Par défaut : année en cours
   period: "year",
-  filtersEnabled: false, // Par défaut, pas de filtres = toutes les données
+  filtersEnabled: true, // Activer les filtres par défaut avec l'année en cours
 };
 
 export function useDashboardState(): DashboardState {

@@ -23,6 +23,14 @@ interface KpiData {
 }
 
 export function MainKpisCard({ kpis, selectedYear, compareYear }: MainKpisCardProps) {
+  console.log('🔍 MainKpisCard Debug:', {
+    selectedYear,
+    compareYear,
+    hasComparison: !!kpis.comparison,
+    passportsOrdered: kpis.passportsOrdered,
+    comparisonPassports: kpis.comparison?.passportsOrdered
+  });
+  
   // Préparer les données des 2 KPIs principaux
   const kpisData: KpiData[] = [
     {
@@ -64,14 +72,22 @@ export function MainKpisCard({ kpis, selectedYear, compareYear }: MainKpisCardPr
     isPositive: boolean; 
     isNeutral: boolean 
   } | null => {
-    if (!compare || typeof current === 'string' || typeof compare === 'string') return null;
+    console.log('🔍 Delta Calculation:', { current, compare, hasCompare: !!compare });
+    
+    if (!compare || typeof current === 'string' || typeof compare === 'string') {
+      console.log('🔍 Delta: No delta (missing compare or string values)');
+      return null;
+    }
     
     const delta = ((current - compare) / compare) * 100;
-    return {
+    const result = {
       percentage: Math.abs(delta),
       isPositive: delta > 0,
       isNeutral: Math.abs(delta) < 0.1
     };
+    
+    console.log('🔍 Delta Result:', result);
+    return result;
   };
 
   return (

@@ -88,6 +88,10 @@ export interface ComprehensiveKpis {
   ordersWithFourPassports: number;
   ordersWithFivePlusPassports: number;
 
+  // 9. Newsletter
+  newsletterSubscriptions: number;
+  newsletterPercentage: number;
+
   // Données pour comparaison année précédente
   comparison?: ComprehensiveKpis;
 }
@@ -118,14 +122,22 @@ export function computeComprehensiveKpis(
   const kpis = calculateKpisForYear(currentYearData);
 
   // Calcul de comparaison si année de comparaison fournie
+  console.log('🔍 KPIs Comparison Debug:', { year, compareYear, hasYear: !!year, hasCompareYear: !!compareYear });
+  
   if (compareYear && year) { // Comparaison seulement si on a une année de base
     const compareYearData = data.filter(row => {
       if (!row.orderDate) return false;
       return new Date(row.orderDate).getFullYear() === compareYear;
     });
     
+    console.log('🔍 Compare Year Data:', { compareYear, dataLength: compareYearData.length });
+    
     if (compareYearData.length > 0) {
       kpis.comparison = calculateKpisForYear(compareYearData);
+      console.log('🔍 Comparison KPIs calculated:', {
+        passportsOrdered: kpis.comparison.passportsOrdered,
+        totalOrders: kpis.comparison.totalOrders
+      });
     }
   }
 
@@ -312,6 +324,9 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
   let ordersWithFourPassports = 0;
   let ordersWithFivePlusPassports = 0;
 
+  // 9. Newsletter
+  let newsletterSubscriptions = 0;
+
   yearData.forEach(row => {
     const passportCount = row.passports || 0;
     if (passportCount === 1) {
@@ -325,7 +340,14 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
     } else if (passportCount >= 5) {
       ordersWithFivePlusPassports++;
     }
+
+    // Comptage newsletter
+    if (row.newsletter) {
+      newsletterSubscriptions++;
+    }
   });
+
+  const newsletterPercentage = totalOrders > 0 ? (newsletterSubscriptions / totalOrders) * 100 : 0;
 
   return {
     // 1. Passeports et commandes
@@ -389,6 +411,10 @@ function calculateKpisForYear(yearData: RawRow[]): ComprehensiveKpis {
     ordersWithTwoPassports,
     ordersWithThreePassports,
     ordersWithFourPassports,
-    ordersWithFivePlusPassports
+    ordersWithFivePlusPassports,
+
+    // 9. Newsletter
+    newsletterSubscriptions,
+    newsletterPercentage
   };
 }

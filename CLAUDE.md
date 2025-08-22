@@ -68,6 +68,20 @@ Required in `.env.local`:
 - Server-side rendering for data fetching
 - Tu as toujours l'autorisation de mettre en place les modifications que tu as planifiées.
 
+### Development Guidelines
+
+#### Version Management
+- **Default Development Target**: Tous les développements doivent être implémentés par défaut dans la version principale (`src/app/page.tsx` et `DashboardContent.tsx`), sauf mention contraire explicite de l'utilisateur
+- **Version Indicators**: Chaque version dispose d'une gélule de version située à droite du titre du projet pour identifier la version actuelle :
+  - Version principale : gélule verte avec mention "Version stable"
+  - Versions alternatives : gélules avec couleurs et mentions spécifiques à chaque version
+- **Consistency**: Maintenir la cohérence des fonctionnalités entre les versions lors des mises à jour
+
+#### Post-Development Workflow
+- **URL Availability**: Toujours s'assurer que le serveur de développement est accessible à http://localhost:3000 après chaque série de modifications
+- **Server Restart**: Redémarrer automatiquement le serveur avec `npm run dev` après les mises à jour importantes
+- **User Testing**: Fournir l'URL active pour permettre à l'utilisateur de tester les modifications
+
 ### Data Quality Considerations
 
 #### Champ "Pays" (Country Field)

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/app/components/ui/button";
-import { Share2, Check, Copy } from "lucide-react";
+import { Send, Check, Copy } from "lucide-react";
 
 export default function ShareButton() {
   const [showCopied, setShowCopied] = useState(false);
@@ -31,20 +31,13 @@ export default function ShareButton() {
 
   return (
     <div className="relative">
-      <Button
+      <button
         onClick={handleShare}
-        variant="outline"
-        size="sm"
-        style={{
-          borderColor: '#60a5fa',
-          color: '#1d4ed8',
-          backgroundColor: '#ffffff'
-        }}
-        className="hover:bg-blue-50 hover:border-blue-500 font-medium transition-all"
+        className="px-3 py-2 text-sm rounded-md transition-colors border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 font-medium flex items-center gap-2"
       >
-        <Share2 className="h-4 w-4 mr-2" />
+        <Send className="h-4 w-4" />
         Partager
-      </Button>
+      </button>
       
       {/* Popup animée de confirmation */}
       {showCopied && (

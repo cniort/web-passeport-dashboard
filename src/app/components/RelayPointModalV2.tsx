@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { X, Search, MapPin, ChevronDown, Download } from 'lucide-react';
 import { formatDecimal } from '@/app/lib/format';
 import { sortByVelodysseeOrder } from '@/app/config/velodyssee-km-index';
@@ -34,6 +34,23 @@ export function RelayPointModalV2({
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [exportFormat, setExportFormat] = useState<ExportFormat>('csv');
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  
+  // Gérer la fermeture par clic en dehors
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   const sortOptions = [
     { value: 'orders-desc' as SortOption, label: 'Commandes par ordre décroissant' },
@@ -175,7 +192,7 @@ export function RelayPointModalV2({
 
   return (
     <div className="fixed inset-0 backdrop-blur-[2px] bg-gray-900/30 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div ref={modalRef} className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
